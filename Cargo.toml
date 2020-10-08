@@ -1,0 +1,22 @@
+[package]
+name = "defeederated"
+version = "0.1.0"
+authors = ["Michał Sidor (Michcioperz) <public+git@meekchopp.es>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+feed-rs = "0.4.0"
+warp = "0.2.5"
+rusqlite = "0.24.1"
+pretty_env_logger = "0.4.0"
+better-panic = "0.2.0"
+anyhow = "1.0.33"
+r2d2 = "0.8.9"
+r2d2_sqlite = "0.17.0"
+maud = "0.22.0"
+
+[dependencies.tokio]
+version = "0.2"
+features = ["macros", "rt-threaded"]
