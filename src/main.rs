@@ -6,7 +6,7 @@ pub(crate) mod database;
 pub(crate) mod templates;
 mod views;
 
-const UPDATE_PERIOD: tokio::time::Duration = tokio::time::Duration::from_secs(5);
+const UPDATE_PERIOD: tokio::time::Duration = tokio::time::Duration::from_secs(3600);
 
 #[tokio::main]
 async fn main() {
