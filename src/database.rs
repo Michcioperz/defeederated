@@ -1,4 +1,4 @@
-use rusqlite::NO_PARAMS;
+use rusqlite::{params, NO_PARAMS};
 use warp::Filter;
 
 pub(crate) type Db = r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>;
@@ -50,11 +50,14 @@ impl FeedActor {
 
 #[derive(Debug)]
 pub(crate) struct APObject {
-    id: String,
-    content: String,
+    pub(crate) id: String,
+    pub(crate) content: String,
 }
 
-pub(crate) fn with_db(pool: Db) -> impl warp::Filter<Extract = (Db,), Error = std::convert::Infallible> + Clone {
+pub(crate) fn with_db(
+    pool: &Db,
+) -> impl warp::Filter<Extract = (Db,), Error = std::convert::Infallible> + Clone {
+    let pool = pool.clone();
     warp::any().map(move || pool.clone())
 }
 
@@ -107,4 +110,23 @@ pub(crate) fn list_feeds(
     let results: Vec<rusqlite::Result<FeedActor>> = rows.collect();
     let result: rusqlite::Result<Vec<FeedActor>> = results.into_iter().collect();
     Ok(result?)
+}
+
+pub(crate) fn fetch_object<S: AsRef<str>>(conn: Conn, id: S) -> anyhow::Result<APObject> {
+    Ok(conn.query_row(
+        r#"
+        SELECT
+            id,
+            content
+        FROM ap_objects
+        WHERE id = ?
+        "#,
+        params![id.as_ref()],
+        |row| {
+            Ok(APObject {
+                id: row.get(0)?,
+                content: row.get(1)?,
+            })
+        },
+    )?)
 }

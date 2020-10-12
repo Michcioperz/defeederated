@@ -13,9 +13,13 @@ async fn main() {
 
     let index = warp::get()
         .and(warp::path::end())
-        .and(database::with_db(pool))
+        .and(database::with_db(&pool))
         .and_then(views::hello);
-    let routes = index;
+    let fetch = warp::get()
+        .and(warp::path("objects").and(warp::path::param()))
+        .and(database::with_db(&pool))
+        .and_then(views::fetch_object);
+    let routes = index.or(fetch);
 
     warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
 }

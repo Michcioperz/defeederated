@@ -1,5 +1,6 @@
 use crate::database;
 use crate::templates;
+use warp::http::Response;
 
 #[derive(Debug)]
 struct MiddleErr(anyhow::Error);
@@ -36,3 +37,24 @@ pub(crate) async fn hello(db: database::Db) -> Result<impl warp::Reply, warp::Re
     Ok(warp::reply::html(html.0))
 }
 
+pub(crate) async fn fetch_object(
+    id: String,
+    db: database::Db,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let conn = db
+        .get()
+        .map_err::<anyhow::Error, _>(Into::into)
+        .map_err::<MiddleErr, _>(Into::into)?;
+    let object = match database::fetch_object(conn, id) {
+        Err(e) => {
+            return Err(match e.downcast_ref() {
+                Some(rusqlite::Error::QueryReturnedNoRows) => warp::reject::not_found(),
+                _ => MiddleErr::from(e).into(),
+            })
+        }
+        Ok(obj) => obj,
+    };
+    Ok(Response::builder()
+        .header("content-type", "application/activity+json")
+        .body(object.content))
+}
