@@ -25,7 +25,7 @@ pub(crate) fn feed_list(feeds: Vec<FeedActor>) -> anyhow::Result<Markup> {
         html! {
             ul {
                 @for feed_actor in feeds {
-                    @let feed = feed_actor.feed()?;
+                    @let feed = feed_actor.last_feed()?;
                     li {
                         a href={(feed_actor.actor_url)} {
                             (feed.title.map(|t| t.content).unwrap_or_else(|| "untitled feed".to_string()))

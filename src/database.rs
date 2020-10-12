@@ -21,7 +21,7 @@ pub(crate) struct FeedActor {
 }
 
 impl FeedActor {
-    pub(crate) fn feed(&self) -> anyhow::Result<feed_rs::model::Feed> {
+    pub(crate) fn last_feed(&self) -> anyhow::Result<feed_rs::model::Feed> {
         let cursor = std::io::Cursor::new(self.last_feed_content.as_bytes());
         match feed_rs::parser::parse(cursor) {
             Ok(feed) => Ok(feed),
