@@ -42,7 +42,7 @@ impl FeedActor {
                 published: None,
                 rights: None,
                 ttl: None,
-                entries: vec![]
+                entries: vec![],
             }),
         }
     }
@@ -84,9 +84,7 @@ pub(crate) fn create_models(conn: Conn) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub(crate) fn list_feeds(
-    conn: Conn,
-) -> anyhow::Result<Vec<FeedActor>> {
+pub(crate) fn list_feeds(conn: Conn) -> anyhow::Result<Vec<FeedActor>> {
     let mut stmt = conn.prepare(
         r#"
         SELECT
@@ -98,15 +96,17 @@ pub(crate) fn list_feeds(
         FROM feed_actors
         "#,
     )?;
-    let rows = stmt.query_map(rusqlite::NO_PARAMS, |row| {
-        Ok(FeedActor {
-            actor_url: row.get(0)?,
-            public_key: row.get(1)?,
-            private_key: row.get(2)?,
-            feed_url: row.get(3)?,
-            last_feed_content: row.get(4)?,
+    let rows = stmt
+        .query_map(rusqlite::NO_PARAMS, |row| {
+            Ok(FeedActor {
+                actor_url: row.get(0)?,
+                public_key: row.get(1)?,
+                private_key: row.get(2)?,
+                feed_url: row.get(3)?,
+                last_feed_content: row.get(4)?,
+            })
         })
-    }).unwrap();
+        .unwrap();
     let results: Vec<rusqlite::Result<FeedActor>> = rows.collect();
     let result: rusqlite::Result<Vec<FeedActor>> = results.into_iter().collect();
     Ok(result?)

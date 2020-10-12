@@ -1,5 +1,5 @@
 use crate::database::FeedActor;
-use maud::{DOCTYPE, html, Markup};
+use maud::{html, Markup, DOCTYPE};
 
 pub(crate) fn base<S: AsRef<str>>(title: S, content: Markup) -> Markup {
     html! {
@@ -20,16 +20,19 @@ pub(crate) fn base<S: AsRef<str>>(title: S, content: Markup) -> Markup {
 }
 
 pub(crate) fn feed_list(feeds: Vec<FeedActor>) -> anyhow::Result<Markup> {
-    Ok(base("Feeds list", html! {
-        ul {
-            @for feed_actor in feeds {
-                @let feed = feed_actor.feed()?;
-                li {
-                    a href={(feed_actor.actor_url)} {
-                        (feed.title.map(|t| t.content).unwrap_or_else(|| "untitled feed".to_string()))
+    Ok(base(
+        "Feeds list",
+        html! {
+            ul {
+                @for feed_actor in feeds {
+                    @let feed = feed_actor.feed()?;
+                    li {
+                        a href={(feed_actor.actor_url)} {
+                            (feed.title.map(|t| t.content).unwrap_or_else(|| "untitled feed".to_string()))
+                        }
                     }
                 }
             }
-        }
-    }))
+        },
+    ))
 }
