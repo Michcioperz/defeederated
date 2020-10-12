@@ -19,4 +19,4 @@ maud = "0.22.0"
 
 [dependencies.tokio]
 version = "0.2"
-features = ["macros", "rt-threaded"]
+features = ["macros", "rt-threaded", "time"]
