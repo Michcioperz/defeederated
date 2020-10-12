@@ -34,11 +34,12 @@ async fn main() {
 
 async fn periodic_updater(db: database::Db) -> anyhow::Result<!> {
     let mut interval = tokio::time::interval(UPDATE_PERIOD);
+    let client = reqwest::Client::new();
     loop {
         {
             let conn = db.get()?;
-            for feed in database::list_feeds(conn)? {
-                println!("{:?}", feed.last_feed()?);
+            for mut feed in database::list_feeds(conn)? {
+                feed.update_from_remote_feed(&client).await?;
             }
         }
         interval.tick().await;

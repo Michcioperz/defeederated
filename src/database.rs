@@ -21,9 +21,46 @@ pub(crate) struct FeedActor {
 }
 
 impl FeedActor {
+    pub(crate) async fn update_from_remote_feed(
+        &mut self,
+        client: &reqwest::Client,
+    ) -> anyhow::Result<()> {
+        let new_content = self.remote_feed_content(client).await?;
+        let old_feed = self.last_feed()?;
+        let new_feed = Self::parse_feed(&new_content)?;
+        let old_entry_ids: std::collections::BTreeSet<_> =
+            old_feed.entries.into_iter().map(|entry| entry.id).collect();
+        let new_entries: Vec<_> = new_feed
+            .entries
+            .into_iter()
+            .filter(|entry| !old_entry_ids.contains(&entry.id))
+            .collect();
+        for new_entry in new_entries {
+            // TODO: do something meaningful
+            tracing::info!(target: "new_entries", id = ?new_entry.id);
+        }
+        Ok(())
+    }
+    pub(crate) fn parse_feed<T: AsRef<[u8]>>(bytes: T) -> anyhow::Result<feed_rs::model::Feed> {
+        let cursor = std::io::Cursor::new(bytes.as_ref());
+        Ok(feed_rs::parser::parse(cursor)?)
+    }
+    pub(crate) async fn remote_feed_content(
+        &self,
+        client: &reqwest::Client,
+    ) -> anyhow::Result<bytes::Bytes> {
+        let res = client.get(&self.feed_url).send().await?;
+        Ok(res.bytes().await?)
+    }
+    pub(crate) async fn remote_feed(
+        &self,
+        client: &reqwest::Client,
+    ) -> anyhow::Result<feed_rs::model::Feed> {
+        let bytes = self.remote_feed_content(client).await?;
+        Self::parse_feed(bytes)
+    }
     pub(crate) fn last_feed(&self) -> anyhow::Result<feed_rs::model::Feed> {
-        let cursor = std::io::Cursor::new(self.last_feed_content.as_bytes());
-        match feed_rs::parser::parse(cursor) {
+        match Self::parse_feed(&self.last_feed_content) {
             Ok(feed) => Ok(feed),
             Err(_) => Ok(feed_rs::model::Feed {
                 feed_type: feed_rs::model::FeedType::JSON,

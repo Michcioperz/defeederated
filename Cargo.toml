@@ -16,6 +16,9 @@ anyhow = "1.0.33"
 r2d2 = "0.8.9"
 r2d2_sqlite = "0.17.0"
 maud = "0.22.0"
+reqwest = "0.10.8"
+bytes = "0.5.6"
+tracing = "0.1.21"
 
 [dependencies.tokio]
 version = "0.2"
